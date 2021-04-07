@@ -3,6 +3,10 @@ var bg,bg_image;
 var brickGroup, brickImg;
 var coinGroup,coinImg;
 var coinScore = 0;
+var obsGroups,obs1,obs2;
+var turImg,mushImg;
+var dieSound;
+var marioDead;
 function preload(){
   bg_image = loadImage("images/bgnew.jpg");
   mario_running = loadAnimation("images/mar1.png","images/mar2.png","images/mar3.png","images/mar4.png",
@@ -11,7 +15,15 @@ function preload(){
   //load coin sound
   coinSound = loadSound("sounds/coinSound.mp3");
   coinImg = loadAnimation("images/con1.png","images/con2.png","images/con3.png","images/con4.png",
-  "images/con5.png","images/con6.png");   
+  "images/con5.png","images/con6.png"); 
+  //obstales images
+  turImg = loadAnimation("images/tur1.png","images/tur2.png","images/tur3.png",
+  "images/tur4.png","images/tur5.png");
+  mushImg = loadAnimation("images/mush1.png","images/mush2.png","images/mush3.png",
+  "images/mush4.png","images/mush5.png","images/mush6.png");
+  dieSound = loadSound("sounds/dieSound.mp3");
+  //load dead mario
+  marioDead = loadAnimation("images/dead.png");
 }
 
 function setup() {
@@ -24,6 +36,7 @@ bg.velocityX = -6;
 //mario
 mario = createSprite(200,500,20,20);
 mario.addAnimation("running",mario_running);
+mario.addAnimation("collide",marioDead);
 mario.scale=.3;
 //platform
 platform = createSprite(200,600,300,10);
@@ -31,6 +44,9 @@ platform = createSprite(200,600,300,10);
 brickGroup = new Group();
 // a coin group
 coinGroup = new Group();
+//a obstacle group
+obsGroups = new Group();
+
 }
 
 function draw() {
@@ -69,12 +85,23 @@ for (var i = 0;i<coinGroup.length;i++){
    temp = null;
   }
 }
+//obstacles
+generateObs();
 //a bug (error)
 if(mario.x < 200){
   mario.x = 200;
 }
 if(mario.y < 50){
   mario.y = 50;
+}
+//load animation for mario dead state
+for(var i = 0;i<obsGroups.length;i++){
+  var temp = obsGroups.get(i);
+  if(temp.isTouching(mario)){
+    dieSound.play();
+    mario.addAnimation("collide",marioDead);
+  }
+
 }
 drawSprites();
 textSize(20);
@@ -101,4 +128,22 @@ function generateCoin(){
    coinGroup.add(coin);
    coin.scale = .1;
 }
+}
+function generateObs(){
+  if(frameCount % 100  === 0){
+    var obstacle = createSprite(1200,550);
+    obstacle.scale = .2;
+    obstacle.velocityX = -5;
+    var ob = Math.round(random(1,2));
+    switch(ob){
+      case 1:obstacle.addAnimation("Mushroom",mushImg);
+      break
+      case 2:obstacle.addAnimation("Turtle",turImg);
+      break;
+      default : 
+      break;
+    }
+    obstacle.lifetime = 250;
+    obsGroups.add(obstacle);
+  }
 }
